@@ -28,10 +28,6 @@ Grid2d:sub( x, y, w = maxwidth, h = maxheight )
 -----------------------------------------------
 Create a slice from the original grid. Original grid is not changed.
 
-Grid2d:map( f, x = 1, y = 1, w = maxwidth, h = maxheight )
-----------------------------------------------------------
-Same as `fill` but returns changed copy of the grid instead of mutating original one.
-
 Grid2d:getWidth()
 -----------------
 Returns grid's width.
