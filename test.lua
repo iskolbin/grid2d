@@ -16,7 +16,7 @@ local test1p = Grid2d.decode( test1 )
 
 print( test1p )
 
-local test2p = Grid2d.decode( test1 ):map( function( self, x, y, s )
+local test2p = Grid2d.decode( test1 ):fill( function( self, x, y, s )
 	if s == '#' then
 		if self[x][y+1] ~= '#' and self[x][y-1] ~= '#' then
 			return '-'
@@ -35,7 +35,12 @@ print( Grid2d.new( 10, 10 ):fill( function() return '@' end ))
 
 print( Grid2d.new( 10, 10 ):fill( function() return '@' end ):fill( function() return '.' end, 3, 3, 4, 3 ))
 
+print( 'sub')
+
 print( test2p:sub( 3, 3, 5, 4 ))
+print()
+print( test2p:sub( 3, 3 ))
+print()
 
 local test2 = [[
 123::

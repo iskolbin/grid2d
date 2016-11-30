@@ -17,12 +17,22 @@ local function defaultDecoder( self, x, y, v )
 	return v
 end
 
-function Grid2d.new( width, height )
+function Grid2d.new( width_or_grid, height )
 	local self = {}	
-	for x = 1, width do
-		self[x] = {}
-		for y = 1, height do
-			self[x][y] = ''
+	if type( width_or_grid ) == 'table' then
+		local w, h = #width_or_grid, #width_or_grid[1]
+		for x = 1, w do
+			self[x] = {}
+			for y = 1, h do
+				self[x][y] = width_or_grid[x][y]
+			end
+		end
+	else
+		for x = 1, width_or_grid do
+			self[x] = {}
+			for y = 1, height do
+				self[x][y] = ''
+			end
 		end
 	end
 	return setmetatable( self, Grid2dMt )
@@ -59,15 +69,16 @@ function Grid2d:blit( src, destx, desty, srcx, srcy, srcw, srch )
 end
 
 function Grid2d:sub( x, y, w, h )
-	x, y = math.max( 1, math.min( x, self:getWidth())), math.max( 1, math.min( y, self:getHeight()))
-	w, h = math.min( self:getWidth() - x + 1, w or 1 ), math.min( self:getHeight() - y + 1, h or 1 )
-	local out = Grid2d.new( w, h )
+	local width, height = self:getWidth(), self:getHeight()
+	x, y = math.max( 1, math.min( x, width )), math.max( 1, math.min( y, height ))
+	w, h = math.min( width - x + 1, w or width ), math.min( height - y + 1, h or height )
+	local result = Grid2d.new( w, h )
 	for x_ = 1, w do
 		for y_ = 1, h do
-			out[x_][y_] = self[x_ + x][y_ + y]
+			result[x_][y_] = self[x_ + x-1][y_ + y-1]
 		end
 	end
-	return out
+	return result
 end
 
 function Grid2d:getWidth()
@@ -76,21 +87,6 @@ end
 
 function Grid2d:getHeight()
 	return #self[1]
-end
-
-function Grid2d:clone()
-	return Grid2d.new( self:getWidth(), self:getHeight()):blit( self )
-end
-
-function Grid2d:map( f )
-	local w, h = self:getWidth(), self:getHeight()
-	local result = Grid2d.new( w, h )
-	for x = 1, w do
-		for y = 1, h do
-			result[x][y] = f( self, x, y, self[x][y] )
-		end
-	end
-	return result
 end
 
 function Grid2d:flipHorizontal()
