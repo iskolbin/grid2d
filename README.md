@@ -11,21 +11,17 @@ Grid2d.new( src )
 -----------------
 Creates new grid copying all elements from `src`. 
 
-Grid2d:isInside( x, y, w = 1, h = 1 )
--------------------------------------
-Checks if the rectangle is inside the grid
-
-Grid2d:fill( f, x = 1, y = 1, w = maxwidth, h = maxheight )
------------------------------------------------------------
+Grid2d:fill( f, x = 1, y = 1, w = -1, h = -1 )
+----------------------------------------------
 Apply `f` function to all cells in the selected rectangle. Changes grid __inplace__.
 
-Grid2d:blit( src, destx = 1, desty = 1, srcx = 1, srcy = 1, srcw = maxwidth of src, srch = maxheight of src )
--------------------------------------------------------------------------------------------------------------
+Grid2d:blit( src, destx = 1, desty = 1, srcx = 1, srcy = 1, srcw = -1, srch = -1 )
+----------------------------------------------------------------------------------
 Put cells from `src` in the rectangle `(srcx,srcy,srcw,srch)` into the grid with offset `(destx,desty)`.
 Crop result if out of bounds. Changes grid __inplace__.
 
-Grid2d:sub( x, y, w = maxwidth, h = maxheight )
------------------------------------------------
+Grid2d:sub( x, y, w = -1, h = -1 )
+----------------------------------
 Create a slice from the original grid. Original grid is not changed.
 
 Grid2d:getWidth()

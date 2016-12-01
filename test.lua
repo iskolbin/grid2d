@@ -29,7 +29,7 @@ local test2p = Grid2d.decode( test1 ):fill( function( self, x, y, s )
 	return s
 end )
 
-print( test2p )
+print( test2p:encode() )
 
 print( Grid2d.new( 10, 10 ):fill( function() return '@' end ))
 

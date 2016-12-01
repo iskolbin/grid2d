@@ -1,13 +1,6 @@
 local Grid2d = {}
 
-local Grid2dMt
-
-local function defaultFill( f )
-	f = f == nil and '' or f
-	return function(self, x, y, v )
-		return f
-	end
-end
+Grid2d.__index = Grid2d
 
 local function defaultEncoder( self, x, y, v )
 	return v
@@ -15,6 +8,14 @@ end
 
 local function defaultDecoder( self, x, y, v )
 	return v
+end
+
+local function getWidth( self )
+	return #self
+end
+
+local function getHeight( self )
+	return #self[1]
 end
 
 function Grid2d.new( width_or_grid, height )
@@ -35,16 +36,21 @@ function Grid2d.new( width_or_grid, height )
 			end
 		end
 	end
-	return setmetatable( self, Grid2dMt )
-end
-
-function Grid2d:isInside( x, y, w, h )
-	return x >= 1 and y >= 1 and x+(w or 1)-1 <= self:getWidth() and y+(h or 1)-1 <= self:getHeight()
+	return setmetatable( self, Grid2d )
 end
 
 function Grid2d:fill( fill, x, y, w, h )
-	x, y = math.max( 1, math.min( x or 1, self:getWidth())), math.max( 1, math.min( y or 1, self:getHeight()))
-	w, h = math.min( self:getWidth() - x + 1, w or self:getWidth() ), math.min( self:getHeight() - y + 1, h or self:getHeight())
+	if x and x < 0 then x = width + x + 1 end
+	if y and y < 0 then y = height + y + 1 end
+	if w and w < 0 then w = width + w + 1 end
+	if h and h < 0 then h = height + h + 1 end
+	x, y = math.max( 1, math.min( x or 1, getWidth( self ))), math.max( 1, math.min( y or 1, getHeight( self )))
+	w, h = math.min( getWidth( self ) - x + 1, w or getWidth( self ) ), math.min( getHeight( self ) - y + 1, h or getHeight( self ))
+	local mt = getmetatable( fill )
+	if type( fill ) ~= 'function ' and type( fill ) == 'table' and  (mt == nil or mt.__call == nil) then
+		local newv = fill
+		fill = function( self, x, y, v ) return newv end
+	end
 	for x_ = x, x + w-1 do
 		local col = self[x]
 		for y_ = y, y+h-1 do
@@ -57,9 +63,15 @@ end
 function Grid2d:blit( src, destx, desty, srcx, srcy, srcw, srch )
 	destx, desty = destx or 1, desty or 1
 	srcx, srcy = srcx or 1, srcy or 1
-	local w, h = Grid2d.getWidth( src ), Grid2d.getHeight( src )
-	srcw = math.max( 0, math.min( self:getWidth() - destx + 1, w - srcx + 1, srcw or w ))
-	srch = math.max( 0, math.min( self:getHeight() - desty + 1, h - srcy + 1, srch or h ))
+	local w, h = getWidth( src ), getHeight( src )
+	if destx and destx < 0 then destx = getWidth( self ) + destx + 1 end
+	if desty and desty < 0 then desty = getHeight( self )  + desty + 1 end
+	if srcx and srcx < 0 then srcx = x + srcx + 1 end
+	if srcy and srcy < 0 then srcy = y + srcy + 1 end
+	if srcw and srcw < 0 then srcw = w + srcw + 1 end
+	if srch and srch < 0 then srch = h + srch + 1 end
+	srcw = math.max( 0, math.min( getWidth( self ) - destx + 1, w - srcx + 1, srcw or w ))
+	srch = math.max( 0, math.min( getHeight( self ) - desty + 1, h - srcy + 1, srch or h ))
 	for x = 0, srcw-1 do
 		for y = 0, srch-1 do
 			self[x+destx][y+desty] = src[x+srcx][y+srcy]
@@ -69,7 +81,11 @@ function Grid2d:blit( src, destx, desty, srcx, srcy, srcw, srch )
 end
 
 function Grid2d:sub( x, y, w, h )
-	local width, height = self:getWidth(), self:getHeight()
+	local width, height = getWidth( self ), getHeight( self )
+	if x and x < 0 then x = width + x + 1 end
+	if y and y < 0 then y = height + y + 1 end
+	if w and w < 0 then w = width + w + 1 end
+	if h and h < 0 then h = height + h + 1 end
 	x, y = math.max( 1, math.min( x, width )), math.max( 1, math.min( y, height ))
 	w, h = math.min( width - x + 1, w or width ), math.min( height - y + 1, h or height )
 	local result = Grid2d.new( w, h )
@@ -82,15 +98,15 @@ function Grid2d:sub( x, y, w, h )
 end
 
 function Grid2d:getWidth()
-	return #self
+	return getWidth( self )
 end
 
 function Grid2d:getHeight()
-	return #self[1]
+	return getHeight( self )
 end
 
 function Grid2d:flipHorizontal()
-	local w, h = self:getWidth(), self:getHeight()
+	local w, h = getWidth( self ), getHeight( self )
 	local result = Grid2d.new( w, h )
 	for x = 1, w do
 		for y = 1, h do
@@ -101,7 +117,7 @@ function Grid2d:flipHorizontal()
 end
 
 function Grid2d:flipVertical()
-	local w, h = self:getWidth(), self:getHeight()
+	local w, h = getWidth( self ), getHeight( self )
 	local result = Grid2d.new( w, h )
 	for x = 1, w do
 		for y = 1, h do
@@ -112,7 +128,7 @@ function Grid2d:flipVertical()
 end
 
 function Grid2d:transpose()
-	local w, h = self:getWidth(), self:getHeight()
+	local w, h = getWidth( self ), getHeight( self )
 	local result = Grid2d.new( h, w )
 	for x = 1, w do
 		for y = 1, h do
@@ -123,7 +139,7 @@ function Grid2d:transpose()
 end
 
 function Grid2d:rotateClockwise()
-	local w, h = self:getWidth(), self:getHeight()
+	local w, h = getWidth( self ), getHeight( self )
 	local result = Grid2d.new( h, w )
 	for x = 1, w do
 		for y = 1, h do
@@ -134,7 +150,7 @@ function Grid2d:rotateClockwise()
 end
 
 function Grid2d:rotateCounterClockwise()
-	local w, h = self:getWidth(), self:getHeight()
+	local w, h = getWidth( self ), getHeight( self )
 	local result = Grid2d.new( h, w )
 	for x = 1, w do
 		for y = 1, h do
@@ -156,7 +172,7 @@ function Grid2d:encode( encoder )
 	end
 
 	local t, k = {}, 0
-	local w, h = self:getWidth(), self:getHeight()
+	local w, h = getWidth( self ), getHeight( self )
 	for y = h, 1, -1 do
 		for x = 1, w do
 			k = k + 1
@@ -196,9 +212,9 @@ function Grid2d.decode( str, decoder )
 	return self
 end
 
-Grid2dMt = {
-	__index = Grid2d,
-	__tostring = Grid2d.encode,
-}
+Grid2d.__index = Grid2d
+Grid2d.__tostring = Grid2d.encode
 
-return Grid2d
+return setmetatable( Grid2d, {__call = function(_,...)
+	return Grid2d.new( ... )
+end })
