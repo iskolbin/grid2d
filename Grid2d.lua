@@ -47,7 +47,7 @@ function Grid2d:fill( fill, x, y, w, h )
 	x, y = math.max( 1, math.min( x or 1, getWidth( self ))), math.max( 1, math.min( y or 1, getHeight( self )))
 	w, h = math.min( getWidth( self ) - x + 1, w or getWidth( self ) ), math.min( getHeight( self ) - y + 1, h or getHeight( self ))
 	local mt = getmetatable( fill )
-	if type( fill ) ~= 'function ' or type( fill ) == 'table' and  (mt == nil or mt.__call == nil) then
+	if type( fill ) ~= 'function' or type( fill ) == 'table' and  (mt == nil or mt.__call == nil) then
 		local newv = fill
 		fill = function( self, x, y, v ) return newv end
 	end
